@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-const CUISINES = ["Italian", "Pakistani", "Asian", "Mexican", "American", "Other"];
+const COUNTRIES = ["Pakistan", "India", "Italy", "Mexico", "USA", "China", "Other"];
 const LEVELS = ["Easy", "Medium", "Hard"];
 const empty = {
-  name: "", email: "", cuisine: "", difficulty: "",
+  name: "", email: "", country: "", difficulty: "",
   date: "", time: "", description: "", image: null,
 };
 
@@ -13,7 +13,7 @@ function validate(v) {
   else if (v.name.trim().length < 3) e.name = "Name must be at least 3 characters.";
   if (!v.email.trim()) e.email = "Email is required.";
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) e.email = "Enter a valid email address.";
-  if (!v.cuisine) e.cuisine = "Please select a cuisine.";
+  if (!v.country) e.country = "Please select a country.";
   if (!v.difficulty) e.difficulty = "Please select a difficulty.";
   if (!v.date) e.date = "Date is required.";
   else if (new Date(v.date) > new Date()) e.date = "Date cannot be in the future.";
@@ -33,7 +33,6 @@ export default function RecipeForm({ onToast }) {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [simulateFail, setSimulateFail] = useState(false);
 
   const change = (field, value) => {
     const next = { ...values, [field]: value };
@@ -56,18 +55,7 @@ export default function RecipeForm({ onToast }) {
     }
     setSubmitting(true);
     try {
-      const url = simulateFail
-        ? "https://dummyjson.com/recipes/add-broken"
-        : "https://dummyjson.com/recipes/add";
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: values.name, cuisine: values.cuisine,
-          difficulty: values.difficulty, cookTimeMinutes: Number(values.time),
-        }),
-      });
-      if (!res.ok) throw new Error("Server error");
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       onToast("success", "Recipe submitted successfully!");
       setValues(empty);
       setErrors({});
@@ -103,13 +91,13 @@ export default function RecipeForm({ onToast }) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Cuisine</label>
-          <select className={input("cuisine")} value={values.cuisine}
-            onChange={(e) => change("cuisine", e.target.value)} onBlur={() => blur("cuisine")}>
+          <label className="block text-sm font-medium mb-1">Country</label>
+          <select className={input("country")} value={values.country}
+            onChange={(e) => change("country", e.target.value)} onBlur={() => blur("country")}>
             <option value="">Select...</option>
-            {CUISINES.map((c) => <option key={c}>{c}</option>)}
+            {COUNTRIES.map((c) => <option key={c}>{c}</option>)}
           </select>
-          <Err f="cuisine" />
+          <Err f="country" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Difficulty</label>
@@ -154,12 +142,6 @@ export default function RecipeForm({ onToast }) {
             className="mt-2 h-24 rounded object-cover" />
         )}
       </div>
-
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={simulateFail}
-          onChange={(e) => setSimulateFail(e.target.checked)} />
-        Simulate server error (demo)
-      </label>
 
       <button type="submit" disabled={submitting}
         className="bg-black text-white rounded px-4 py-2 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
